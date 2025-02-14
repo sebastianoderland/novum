@@ -1,0 +1,9 @@
+[package]
+name = "novum"
+version = "0.1.0"
+edition = "2021"
+description = "novum"
+license = "MIT"
+repository = "https://github.com/sebastianoderland/novum"
+
+[dependencies]
