@@ -1,4 +1,4 @@
-use crate::result::Result;
+use crate::prelude::Result;
 
 use super::super::marshall::Marshall;
 

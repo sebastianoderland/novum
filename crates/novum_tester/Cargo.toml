@@ -1,0 +1,7 @@
+[package]
+name = "novum_tester"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+novum = { version = "0.1.1", path = "../novum" }

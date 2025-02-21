@@ -1,0 +1,46 @@
+[package]
+name = "novum"
+version = "0.1.1"
+edition = "2021"
+description = "novum"
+license = "MIT"
+repository = "https://github.com/sebastianoderland/novum"
+exclude = ["src/main.rs"]
+
+[dependencies]
+cfg-if = "1.0.0"
+log = { version = "0.4.25", optional = true, features = ["std"] }
+strfmt = "0.2.4"
+serde = { version = "1.0.217", optional = true, features = ["derive"] }
+serde_json = { version = "1.0.138", optional = true }
+serde_yml = { version = "0.0.12", optional = true }
+toml = { version = "0.8.20", optional = true }
+paste = "1.0.15"
+novum_proc_macros = { version = "0.1.1", path = "../novum_proc_macros" }
+extern_time = { version = "0.3.37", optional = true, package = "time", features = [
+    "formatting",
+    "macros",
+] }
+
+[features]
+result = []
+time = ["dep:extern_time"]
+time-local = ["time", "extern_time/local-offset"]
+logger = ["dep:log"]
+logger-local-time = ["logger", "time-local"]
+marshall = ["dep:serde"]
+marshall-json = ["dep:serde_json"]
+marshall-yaml = ["dep:serde_yml"]
+marshall-toml = ["dep:toml"]
+all = [
+    "result",
+    "time",
+    "time-local",
+    "logger",
+    "logger-local-time",
+    "marshall",
+    "marshall-json",
+    "marshall-yaml",
+    "marshall-toml",
+]
+default = ["all"]

@@ -1,7 +1,7 @@
 use serde::Deserialize;
 use serde::Serialize;
 
-use crate::result::Result;
+use crate::prelude::Result;
 
 pub trait Marshall {
     fn encode<T>(value: T) -> Result<String>

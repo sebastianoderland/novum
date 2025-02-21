@@ -1,10 +1,14 @@
 use super::super::sink::Sink;
+use crate::time::format_description::parse_owned;
+use crate::time::format_description::OwnedFormatItem;
+use crate::time::formatting::Formattable;
+use crate::time::macros::format_description;
 use strfmt::{strfmt, strfmt_builder};
 
 pub struct ConsoleSink {
     level_filter: log::LevelFilter,
     format: String,
-    // datetime_format: chrono::format::StrftimeItems<'static>,
+    datetime_format: OwnedFormatItem,
     color: bool,
 }
 
@@ -13,7 +17,8 @@ impl ConsoleSink {
         Self {
             level_filter: log::LevelFilter::Trace,
             format: String::from("[{datetime}] [{level:5}] {message}"),
-            // datetime_format: chrono::format::StrftimeItems::new("%H:%M:%S.%3f"),
+            datetime_format: parse_owned::<2>("[hour]:[minute]:[second].[subsecond digits:6]")
+                .unwrap(),
             color: true,
         }
     }
@@ -28,8 +33,13 @@ impl ConsoleSink {
         self
     }
 
-    pub fn with_datetime_format(mut self, datetime_format: &'static str) -> Self {
-        // self.datetime_format = chrono::format::StrftimeItems::new(&datetime_format);
+    pub fn with_datetime_format(mut self, datetime_format: impl AsRef<str>) -> Self {
+        self.datetime_format = parse_owned::<2>(datetime_format.as_ref()).unwrap();
+        self
+    }
+
+    pub fn with_color(mut self, color: bool) -> Self {
+        self.color = color;
         self
     }
 
@@ -50,8 +60,6 @@ impl Sink for ConsoleSink {
     }
 
     fn log(&self, record: &log::Record) {
-        // let datetime = chrono::Local::now().format_with_items(self.datetime_format.clone());
-
         let level = match self.color {
             true => format!(
                 "{}{}\x1b[0m",
@@ -61,11 +69,25 @@ impl Sink for ConsoleSink {
             false => record.level().to_string(),
         };
 
-        // let datetime = format!("\x1b[2m{}\x1b[0m", datetime);
+        #[cfg(feature = "logger-local-time")]
+        let datetime = match crate::time::OffsetDateTime::now_local() {
+            Ok(datetime) => datetime,
+            Err(err) => {
+                eprintln!("Failed to get datetime: {}", err);
+                return;
+            }
+        };
+        #[cfg(not(feature = "logger-local-time"))]
+        let datetime = time::OffsetDateTime::now_utc();
+
+        let datetime = format!(
+            "\x1b[2m{}\x1b[0m",
+            datetime.format(&self.datetime_format).unwrap()
+        );
 
         let message = strfmt!(
             &self.format,
-            // datetime => datetime,
+            datetime => datetime,
             level => level,
             message => record.args().to_string(),
             file => record.file().unwrap_or_default().to_string(),
